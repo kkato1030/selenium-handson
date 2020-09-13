@@ -1,14 +1,15 @@
 <template>
   <div>
-    <b-navbar>
+    <b-navbar :mobile-burger="signedIn">
       <template slot="brand">
         <b-navbar-item>
           <h1>Selenium Login Test</h1>
         </b-navbar-item>
       </template>
       <template slot="end" v-if="signedIn">
-        <b-navbar-item tag="div">{{ user.username }}</b-navbar-item>
-        <amplify-sign-out></amplify-sign-out>
+        <b-navbar-item tag="div">
+          <button class="button is-primary" @click="signOut">Logout</button>
+        </b-navbar-item>
       </template>
     </b-navbar>
     <section class="section" v-if="!signedIn">
@@ -119,7 +120,7 @@ export default {
     Hub.listen('auth', function (data) {
       switch (data.payload.event) {
         case 'signIn':
-          this.user = data
+          this.user = data.payload.data
           break
         case 'signOut':
           this.user = undefined
@@ -147,6 +148,13 @@ export default {
         this.errMsg = err.message
       }
       this.submitting = false
+    },
+    async signOut () {
+      try {
+        await Auth.signOut()
+      } catch (err) {
+        console.log(err)
+      }
     },
     getInfo () {
       this.loading = true
