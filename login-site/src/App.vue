@@ -6,19 +6,39 @@
           <h1>Selenium Login Test</h1>
         </b-navbar-item>
       </template>
-      <template slot="end" v-if="authState === 'signedin'">
+      <template slot="end" v-if="signedIn">
         <b-navbar-item tag="div">{{ user.username }}</b-navbar-item>
         <amplify-sign-out></amplify-sign-out>
       </template>
     </b-navbar>
     <section class="section" v-if="!signedIn">
-      <div class="container authenticator">
-        <amplify-authenticator>
-          <amplify-sign-up
-            slot="sign-up"
-            :form-fields.prop="formFields"
-          ></amplify-sign-up>
-        </amplify-authenticator>
+      <div class="container">
+        <div class="columns">
+          <div class="column is-half is-offset-one-quarter">
+            <h1 class="title is-1">Login</h1>
+            <form id="login" @submit.prevent="signin">
+              <b-field label="Username">
+                <b-input v-model="username"></b-input>
+              </b-field>
+              <b-field label="Password">
+                <b-input type="password"
+                  v-model="password"
+                  password-reveal>
+                </b-input>
+              </b-field>
+              <input
+                class="button is-primary"
+                :class="{'is-loading': submitting }"
+                type="submit"
+                value="Login"
+                :disabled="!canSignIn"
+              >
+            </form>
+            <div class="message is-danger mt-2" v-if="errMsg">
+              <div class="message-body">{{ errMsg }}</div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
     <section class="section" v-else>
@@ -68,40 +88,46 @@
 </template>
 
 <script>
-import { onAuthUIStateChange } from '@aws-amplify/ui-components'
+import { Auth, Hub } from 'aws-amplify'
+
+const getUser = async () => {
+  return Auth.currentAuthenticatedUser()
+    .then(data => {
+      return data
+    })
+}
 
 export default {
   name: 'App',
   data () {
     return {
       user: undefined,
-      authState: undefined,
+      submitting: false,
       loading: false,
       display: false,
-      formFields: [
-        {
-          type: 'username',
-          required: true,
-        },
-        {
-          type: 'email',
-          required: true,
-        },
-        {
-          type: 'password',
-          required: true,
-        },
-      ]
+      username: "",
+      password: "",
+      errMsg: "",
     }
   },
-  created () {
-    onAuthUIStateChange((authState, authData) => {
-      console.log(authData)
-      this.authState = authState
-      this.user = authData
-      this.loading = false
-      this.display = false
-    })
+  async created () {
+    try {
+      this.user = await getUser()
+    } catch (e) {
+      console.error(e)
+    }
+    Hub.listen('auth', function (data) {
+      switch (data.payload.event) {
+        case 'signIn':
+          this.user = data
+          break
+        case 'signOut':
+          this.user = undefined
+          break
+        default:
+          console.log(data)
+      }
+    }.bind(this))
   },
   filters: {
     emailVefired (val) {
@@ -109,6 +135,19 @@ export default {
     },
   },
   methods: {
+    async signin () {
+      this.submitting = true
+      try {
+        await Auth.signIn(this.username, this.password)
+        this.username = undefined
+        this.password = undefined
+        this.errMsg = ""
+      } catch (err) {
+        console.log(err)
+        this.errMsg = err.message
+      }
+      this.submitting = false
+    },
     getInfo () {
       this.loading = true
       setTimeout(function () {
@@ -122,30 +161,18 @@ export default {
     },
   },
   computed: {
-    signedIn () {
-      return this.authState === 'signedin' && this.user
+    canSignIn () {
+      return this.username && this.password
     },
-  },
-  beforeDestroy () {
-    return onAuthUIStateChange
+    signedIn () {
+      return !!this.user
+    },
   },
 }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 .mt-2 {
   margin-top: 2em;
-}
-.container.authenticator {
-  display: flex;
-  justify-content: center;
 }
 </style>
