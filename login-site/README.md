@@ -9,7 +9,7 @@ Selenium の使い方を学ぶためのサンプル用サイトです。
 ```
 $ npm install
 $ amplify init
-$ amplify push
+$ amplify publish
 ```
 
 表示される URL にアクセスし、ログイン画面が表示されるか確認しましょう。
