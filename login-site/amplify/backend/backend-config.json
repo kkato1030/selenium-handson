@@ -1,0 +1,10 @@
+{
+	"auth": {
+		"loginsite5822fca4": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": [],
+			"customAuth": false
+		}
+	}
+}
