@@ -16,4 +16,3 @@ plan_element.click()
 day_element = driver.find_element_by_id('reserve_day')
 day_element.clear()
 day_element.send_keys('20')
-

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Variables
-USER_POOL_ID="ap-northeast-1_XXXXXXXXXX"  # Modify
-CLIENT_ID="XXXXXXXXXXXXXXXXXXXXXXXXXX"  # Modify
+USER_POOL_ID="ap-northeast-1_Nq5kEQeuk"  # Modify
+CLIENT_ID="3o2t7k5th1euj1hbr2p1qlg3v1"  # Modify
 REGION="ap-northeast-1"  # Can Modify
 USERNAME_PREFIX="TestUser" # Can Modify
 PASSWORD="Passw0rd!" # Can Modify
